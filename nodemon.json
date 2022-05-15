@@ -1,0 +1,6 @@
+{
+  "watch": ["src/**/*"],
+  "ignore": ["src/public/*"],
+  "ext": "js,jsx,ts,tsx",
+  "exec": "yarn start"
+}
