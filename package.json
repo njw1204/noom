@@ -8,8 +8,8 @@
   "scripts": {
     "start": "ts-node src/app.ts",
     "dev": "nodemon",
-    "lint": "eslint src/**/* --ext js,jsx,ts,tsx",
-    "lint:fix": "eslint --fix src/**/* --ext js,jsx,ts,tsx"
+    "lint": "eslint --ext js,jsx,ts,tsx src/",
+    "lint:fix": "eslint --fix --ext js,jsx,ts,tsx src/"
   },
   "devDependencies": {
     "@babel/cli": "^7.17.10",
@@ -36,5 +36,5 @@
     "pug": "^3.0.2",
     "regenerator-runtime": "^0.13.9"
   },
-  "browserslist": "> 0.5%, last 2 versions, ie 11, not dead"
+  "browserslist": ["> 0.5%", "last 2 versions", "ie 11", "not dead"]
 }
