@@ -1,0 +1,56 @@
+.char-room-divider {
+    margin: 0;
+}
+
+.chat-list-container {
+    width: 100%;
+    margin-bottom: 120px;
+}
+
+.chat-list {
+    width: 100%;
+    padding: 0;
+    list-style: none;
+}
+
+.chat-list li {
+    margin: 4px 0;
+    padding: 4px 8px;
+    border: 1px solid var(--color-bg-secondary);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow) var(--color-shadow);
+}
+
+.chat-form-container {
+    display: flex;
+    position: fixed;
+    left: 1rem;
+    bottom: 60px;
+    right: 1rem;
+    background: #fff;
+}
+
+.nickname-form {
+    display: flex;
+    padding: 1rem;
+}
+
+.chat-submit-form {
+    display: flex;
+    padding: 1rem;
+    flex: 1;
+}
+
+.chat-submit-text-input,
+.nickname-text-input {
+    flex: 1;
+    margin: 0;
+    border-radius: 0;
+}
+
+.chat-submit-send-button,
+.nickname-save-button {
+    margin: 0;
+    padding: 0.5rem 1rem;
+    border-radius: 0;
+}

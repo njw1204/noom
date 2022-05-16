@@ -1,0 +1,25 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(http-equiv="X-UA-Compatible", content="IE=edge")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Noom
+    link(rel="stylesheet", href="https://unpkg.com/mvp.css@1.8.0/mvp.css")
+    link(rel="stylesheet", href="/css/app.css")
+  body
+    .chat-room
+      section
+        h1 Noom
+      hr.char-room-divider
+      main
+        section#chat_list_container.chat-list-container
+          ul.chat-list
+        section.chat-form-container
+          form#nickname_form.nickname-form
+            input.nickname-text-input(placeholder="Nickname")
+            button.nickname-save-button(disabled) Save
+          form#chat_submit_form.chat-submit-form
+            input.chat-submit-text-input(placeholder="Chat")
+            button.chat-submit-send-button(disabled) Send
+    script(src="/js/app.js")
