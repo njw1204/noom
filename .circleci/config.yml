@@ -13,17 +13,15 @@ jobs:
       - run:
           name: "Lint"
           command: "yarn lint"
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .
   build:
     docker:
       - image: cimg/node:16.15.0
     resource_class: small
     steps:
-      - attach_workspace:
-          at: .
+      - checkout
+      - run:
+          name: "Install Dependencies"
+          command: "yarn"
       - run:
           name: "Build"
           command: "yarn build"

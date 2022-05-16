@@ -4,7 +4,7 @@
 
 .chat-list-container {
     width: 100%;
-    margin-bottom: 120px;
+    margin-bottom: 130px;
 }
 
 .chat-list {
@@ -25,20 +25,21 @@
     display: flex;
     position: fixed;
     left: 1rem;
-    bottom: 60px;
+    bottom: 40px;
     right: 1rem;
-    background: #fff;
 }
 
 .nickname-form {
     display: flex;
     padding: 1rem;
+    background-color: #fff;
 }
 
 .chat-submit-form {
     display: flex;
     padding: 1rem;
     flex: 1;
+    background-color: #fff;
 }
 
 .chat-submit-text-input,
