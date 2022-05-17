@@ -19,6 +19,8 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 const MESSAGE_TYPE = Object.freeze({
+  PING: "PING",
+  PONG: "PONG",
   SERVER_HELLO: "SERVER_HELLO",
   CLIENT_HELLO: "CLIENT_HELLO",
   SERVER_CHAT: "SERVER_CHAT",
@@ -40,7 +42,7 @@ function generateUser(id: string) {
   };
 }
 
-function makeMessage(type: string, payload: object) {
+function makeMessage(type: string, payload?: object) {
   return JSON.stringify({
     type,
     payload,
@@ -72,6 +74,9 @@ wss.addListener("connection", (_socket: ChatSocket) => {
     const message = parseMessage(event.data.toString());
 
     switch (message.type) {
+      case MESSAGE_TYPE.PING:
+        socket.send(makeMessage(MESSAGE_TYPE.PONG));
+        break;
       case MESSAGE_TYPE.CLIENT_HELLO: {
         const isAlreadySignUp = users.has(message.payload.id);
         const helloUserId = isAlreadySignUp ? message.payload.id : generateID();

@@ -3,6 +3,8 @@ const STORAGE_KEY = Object.freeze({
 });
 
 const MESSAGE_TYPE = Object.freeze({
+  PING: "PING",
+  PONG: "PONG",
   SERVER_HELLO: "SERVER_HELLO",
   CLIENT_HELLO: "CLIENT_HELLO",
   SERVER_CHAT: "SERVER_CHAT",
@@ -71,6 +73,12 @@ socket.addEventListener("open", () => {
       id: window.sessionStorage.getItem(STORAGE_KEY.USER_ID),
     }),
   );
+
+  setInterval(() => {
+    if (socket.readyState === WebSocket.OPEN) {
+      socket.send(makeMessage(MESSAGE_TYPE.PING));
+    }
+  }, 20000);
 });
 
 socket.addEventListener("close", () => {
@@ -83,6 +91,9 @@ socket.addEventListener("message", (event) => {
   const message = parseMessage(event.data.toString());
 
   switch (message.type) {
+    case MESSAGE_TYPE.PING:
+      socket.send(makeMessage(MESSAGE_TYPE.PONG));
+      break;
     case MESSAGE_TYPE.SERVER_HELLO:
       window.sessionStorage.setItem(
         STORAGE_KEY.USER_ID,
