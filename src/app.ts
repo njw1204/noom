@@ -1,6 +1,7 @@
 import http from "http";
-import WebSocket from "ws";
 import express from "express";
+import { Server } from "socket.io";
+import { instrument } from "@socket.io/admin-ui";
 
 const app = express();
 app.set("views", "views");
@@ -16,137 +17,167 @@ app.get("/*", (req, res) => {
 });
 
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const io = new Server(server, {
+  cors: {
+    origin: ["https://admin.socket.io"],
+    credentials: true,
+  },
+});
+const users = new Map();
 
-const MESSAGE_TYPE = Object.freeze({
-  PING: "PING",
-  PONG: "PONG",
-  SERVER_HELLO: "SERVER_HELLO",
-  CLIENT_HELLO: "CLIENT_HELLO",
-  SERVER_CHAT: "SERVER_CHAT",
-  CLIENT_CHAT: "CLIENT_CHAT",
-  SERVER_PROFILE: "SERVER_PROFILE",
-  CLIENT_PROFILE: "CLIENT_PROFILE",
+instrument(io, {
+  auth: false,
 });
 
-function generateID() {
-  return Math.random()
-    .toString(16)
-    .slice(2);
+function getRooms() {
+  return Array.from(io.sockets.adapter.rooms.keys())
+    .filter((roomName) => !io.sockets.adapter.sids.has(roomName));
 }
 
-function generateUser(id: string) {
+function getSizeOfRoom(roomName: string) {
+  return io.sockets.adapter.rooms.get(roomName)?.size || 0;
+}
+
+function createUser(id: string, password: string) {
   return {
     id,
+    password,
     nickname: "Anonymous",
   };
 }
 
-function makeMessage(type: string, payload?: object) {
-  return JSON.stringify({
-    type,
-    payload,
-  });
+function getRandomString() {
+  return Math.random().toString(16).slice(2);
 }
 
-function parseMessage(message: string) {
-  return JSON.parse(message);
-}
-
-const users = new Map();
-const sockets = new Map();
-
-interface ChatSocket extends WebSocket {
-  id: string;
-  userId: string;
-}
-
-wss.addListener("connection", (_socket: ChatSocket) => {
+io.on("connection", (_socket) => {
   const socket = _socket;
-  socket.id = generateID();
-  sockets.set(socket.id, socket);
 
-  socket.addEventListener("close", () => {
-    sockets.delete(socket.id);
+  socket.on("disconnect", () => {
+    if (socket.data.chatRoom) {
+      if (getRooms().includes(socket.data.chatRoom)) {
+        const user = users.get(socket.data.userId);
+
+        if (user) {
+          io.sockets.to(socket.data.chatRoom).emit("notify-leave-room", {
+            id: user.id,
+            nickname: user.nickname,
+            sizeOfRoom: getSizeOfRoom(socket.data.chatRoom),
+          });
+        }
+      } else {
+        io.sockets.emit("refresh-rooms", getRooms());
+      }
+    }
   });
 
-  socket.addEventListener("message", (event) => {
-    const message = parseMessage(event.data.toString());
+  socket.on("login", (id, password, done) => {
+    let user;
 
-    switch (message.type) {
-      case MESSAGE_TYPE.PING:
-        socket.send(makeMessage(MESSAGE_TYPE.PONG));
-        break;
-      case MESSAGE_TYPE.CLIENT_HELLO: {
-        const isAlreadySignUp = users.has(message.payload.id);
-        const helloUserId = isAlreadySignUp ? message.payload.id : generateID();
-
-        if (!isAlreadySignUp) {
-          users.set(helloUserId, generateUser(helloUserId));
-        }
-
-        socket.userId = helloUserId;
-
-        const helloUser = users.get(helloUserId);
-        socket.send(
-          makeMessage(MESSAGE_TYPE.SERVER_HELLO, {
-            user: {
-              id: helloUser.id,
-              nickname: helloUser.nickname,
-            },
-          }),
-        );
-        break;
-      }
-      case MESSAGE_TYPE.CLIENT_CHAT: {
-        const chatContent = message.payload.content.trim();
-        const chatUserId = socket.userId;
-
-        if (!chatContent || !users.has(chatUserId)) {
-          break;
-        }
-
-        const chatUser = users.get(chatUserId);
-
-        Array.from(sockets.values())
-          .forEach((aSocket) => {
-            if (!users.has(aSocket.userId)) {
-              return;
-            }
-
-            aSocket.send(
-              makeMessage(MESSAGE_TYPE.SERVER_CHAT, {
-                user: {
-                  you: aSocket.userId === chatUser.id,
-                  nickname: chatUser.nickname,
-                },
-                content: chatContent,
-              }),
-            );
-          });
-        break;
-      }
-      case MESSAGE_TYPE.CLIENT_PROFILE: {
-        const profileNickname = message.payload.nickname.trim();
-        const profileUserId = socket.userId;
-
-        if (!users.has(profileUserId)) {
-          break;
-        }
-
-        const profileUser = users.get(profileUserId);
-        profileUser.nickname = profileNickname;
-
-        socket.send(
-          makeMessage(MESSAGE_TYPE.SERVER_PROFILE, {
-            user: profileUser,
-          }),
-        );
-        break;
-      }
-      default:
-        break;
+    if (users.has(id) && users.get(id).password === password) {
+      user = users.get(id);
+    } else {
+      user = createUser(getRandomString(), getRandomString());
+      users.set(user.id, user);
     }
+
+    socket.data.userId = user.id;
+    done({
+      id: user.id,
+      password: user.password,
+      nickname: user.nickname,
+    });
+  });
+
+  socket.on("get-rooms", (done) => {
+    done(getRooms());
+  });
+
+  socket.on("join-room", (_chatRoom, done) => {
+    const user = users.get(socket.data.userId);
+    const chatRoom = _chatRoom.trim().toUpperCase();
+
+    if (user && chatRoom && !socket.data.chatRoom) {
+      const isNewRoom = !getRooms().includes(chatRoom);
+
+      socket.join(chatRoom);
+      socket.to(chatRoom).emit("notify-join-room", {
+        id: user.id,
+        nickname: user.nickname,
+        sizeOfRoom: getSizeOfRoom(chatRoom),
+      });
+
+      if (isNewRoom) {
+        io.sockets.emit("refresh-rooms", getRooms());
+      }
+
+      socket.data.chatRoom = chatRoom;
+      done({
+        chatRoom,
+        sizeOfRoom: getSizeOfRoom(chatRoom),
+      });
+    }
+  });
+
+  socket.on("leave-room", (done) => {
+    const user = users.get(socket.data.userId);
+
+    if (user && socket.data.chatRoom) {
+      socket.leave(socket.data.chatRoom);
+
+      const isRoomRemoved = !getRooms().includes(socket.data.chatRoom);
+
+      if (isRoomRemoved) {
+        io.sockets.emit("refresh-rooms", getRooms());
+      } else {
+        io.sockets.to(socket.data.chatRoom).emit("notify-leave-room", {
+          id: user.id,
+          nickname: user.nickname,
+          sizeOfRoom: getSizeOfRoom(socket.data.chatRoom),
+        });
+      }
+
+      socket.data.chatRoom = undefined;
+      done();
+    }
+  });
+
+  socket.on("send-chat", (_msg, done) => {
+    const user = users.get(socket.data.userId);
+    const msg = _msg.trim();
+
+    if (!socket.data.chatRoom || !user || !msg) {
+      return;
+    }
+
+    io.to(socket.data.chatRoom).emit("receive-chat", {
+      id: user.id,
+      nickname: user.nickname,
+      msg,
+    });
+    done();
+  });
+
+  socket.on("change-nickname", (_nickname, done) => {
+    const user = users.get(socket.data.userId);
+    const nickname = _nickname.trim();
+
+    if (!user || !nickname || user.nickname === nickname) {
+      return;
+    }
+
+    const oldNickname = user.nickname;
+    user.nickname = nickname;
+
+    if (socket.data.chatRoom) {
+      socket.to(socket.data.chatRoom).emit("notify-change-nickname", {
+        id: user.id,
+        nickname: user.nickname,
+        oldNickname,
+      });
+    }
+
+    done();
   });
 });
 
