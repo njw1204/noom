@@ -39,6 +39,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@babel/preset-typescript", "virtual:8ff7b8c3ee7fb9940d4ea2157a1564cef8a084179d920786045830fc34b486f8d567cacb92810de0d79168a0d34591cd618a9db3e1032141abf07d06c81afa72#npm:7.16.7"],\
             ["@socket.io/admin-ui", "virtual:8ff7b8c3ee7fb9940d4ea2157a1564cef8a084179d920786045830fc34b486f8d567cacb92810de0d79168a0d34591cd618a9db3e1032141abf07d06c81afa72#npm:0.3.0"],\
             ["@types/express", "npm:4.17.13"],\
+            ["@types/node", "npm:17.0.35"],\
             ["@types/ws", "npm:8.5.3"],\
             ["@typescript-eslint/eslint-plugin", "virtual:8ff7b8c3ee7fb9940d4ea2157a1564cef8a084179d920786045830fc34b486f8d567cacb92810de0d79168a0d34591cd618a9db3e1032141abf07d06c81afa72#npm:5.23.0"],\
             ["@typescript-eslint/parser", "virtual:8ff7b8c3ee7fb9940d4ea2157a1564cef8a084179d920786045830fc34b486f8d567cacb92810de0d79168a0d34591cd618a9db3e1032141abf07d06c81afa72#npm:5.23.0"],\
@@ -2682,6 +2683,13 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@types-node-npm-17.0.34-e33ea1377d-eb9a640ab8.zip/node_modules/@types/node/",\
           "packageDependencies": [\
             ["@types/node", "npm:17.0.34"]\
+          ],\
+          "linkType": "HARD"\
+        }],\
+        ["npm:17.0.35", {\
+          "packageLocation": "./.yarn/cache/@types-node-npm-17.0.35-5cf9c3dec8-7a24946ae7.zip/node_modules/@types/node/",\
+          "packageDependencies": [\
+            ["@types/node", "npm:17.0.35"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -6422,6 +6430,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@babel/preset-typescript", "virtual:8ff7b8c3ee7fb9940d4ea2157a1564cef8a084179d920786045830fc34b486f8d567cacb92810de0d79168a0d34591cd618a9db3e1032141abf07d06c81afa72#npm:7.16.7"],\
             ["@socket.io/admin-ui", "virtual:8ff7b8c3ee7fb9940d4ea2157a1564cef8a084179d920786045830fc34b486f8d567cacb92810de0d79168a0d34591cd618a9db3e1032141abf07d06c81afa72#npm:0.3.0"],\
             ["@types/express", "npm:4.17.13"],\
+            ["@types/node", "npm:17.0.35"],\
             ["@types/ws", "npm:8.5.3"],\
             ["@typescript-eslint/eslint-plugin", "virtual:8ff7b8c3ee7fb9940d4ea2157a1564cef8a084179d920786045830fc34b486f8d567cacb92810de0d79168a0d34591cd618a9db3e1032141abf07d06c81afa72#npm:5.23.0"],\
             ["@typescript-eslint/parser", "virtual:8ff7b8c3ee7fb9940d4ea2157a1564cef8a084179d920786045830fc34b486f8d567cacb92810de0d79168a0d34591cd618a9db3e1032141abf07d06c81afa72#npm:5.23.0"],\
@@ -7824,7 +7833,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@tsconfig/node12", "npm:1.0.9"],\
             ["@tsconfig/node14", "npm:1.0.1"],\
             ["@tsconfig/node16", "npm:1.0.2"],\
-            ["@types/node", null],\
+            ["@types/node", "npm:17.0.35"],\
             ["@types/swc__core", null],\
             ["@types/swc__wasm", null],\
             ["@types/typescript", null],\
