@@ -10,8 +10,11 @@ html(lang="en")
     link(rel="stylesheet", href="/css/app.css")
   body
     .chat-room
-      section
+      section.header-section
         h1#app_title.app-title Noom
+        #chat_controller.chat-controller(style="display: none;")
+          i#video_on_off_button.ri-camera-fill.chat-controller-toggle.on
+          i#mic_on_off_button.ri-mic-fill.chat-controller-toggle.on
       hr.chat-room-divider
       main
         section#chat_room_form_container.chat-room-form-container
@@ -19,7 +22,10 @@ html(lang="en")
             input.chat-room-text-input(placeholder="Room Name")
             button.chat-room-create-button Join
         section#chat_room_list_container.chat-room-list-container
-        section#chat_list_container.chat-list-container(style="display: none;")
+        #face_player_container.face-player-container(style="display: none;")
+          video#my_face.face-player(autoplay, playsinline, muted)
+          video#peer_face.face-player(autoplay, playsinline)
+        #chat_list_container.chat-list-container(style="display: none;")
           ul.chat-list
         section#chat_form_container.chat-form-container(style="display: none;")
           form#nickname_form.nickname-form

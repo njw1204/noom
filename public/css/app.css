@@ -2,10 +2,28 @@ main {
   padding-top: 2rem;
 }
 
+video {
+  background-color: #aaa;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-around;
+}
+
 .app-title {
+  margin-left: 8px;
+  margin-right: 8px;
   display: flex;
   justify-content: center;
   align-items: center;
+  word-break: break-all;
+}
+
+.chat-room {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 .chat-room-divider {
@@ -14,7 +32,7 @@ main {
 
 .chat-list-container {
   width: 100%;
-  margin-bottom: 130px;
+  margin-bottom: 150px;
 }
 
 .chat-room-list-container {
@@ -46,9 +64,11 @@ main {
 .chat-list li {
   margin: 4px 0;
   padding: 4px 8px;
+  background-color: #fafafa;
   border: 1px solid var(--color-bg-secondary);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow) var(--color-shadow);
+  animation: 0.4s ease-in-out fadeIn;
 }
 
 .chat-form-container {
@@ -92,4 +112,42 @@ main {
 
 .chat-room-leave-button {
   margin-left: 20px;
+  padding: 0.2rem 0.4rem;
+  flex-shrink: 0;
+}
+
+.face-player-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.face-player {
+  width: calc((100vw - 50px) / 2);
+  max-width: 400px;
+  aspect-ratio: 4 / 3;
+}
+
+.chat-controller {
+  display: flex;
+  align-items: center;
+}
+
+.chat-controller-toggle {
+  margin-left: 10px;
+  font-size: 2em;
+  cursor: pointer;
+}
+
+.chat-controller-toggle.on {
+  color: #f00;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }

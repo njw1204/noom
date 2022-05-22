@@ -27,11 +27,12 @@ const users = new Map();
 
 instrument(io, {
   auth: false,
+  namespaceName: "/",
 });
 
-function getRooms() {
+function getRooms(includeSids?: boolean) {
   return Array.from(io.sockets.adapter.rooms.keys())
-    .filter((roomName) => !io.sockets.adapter.sids.has(roomName));
+    .filter((roomName) => includeSids || !io.sockets.adapter.sids.has(roomName));
 }
 
 function getSizeOfRoom(roomName: string) {
@@ -100,6 +101,14 @@ io.on("connection", (_socket) => {
     if (user && chatRoom && !socket.data.chatRoom) {
       const isNewRoom = !getRooms().includes(chatRoom);
 
+      if (getSizeOfRoom(chatRoom) >= 2) {
+        done({
+          error: true,
+          message: "The room is Full!",
+        });
+        return;
+      }
+
       socket.join(chatRoom);
       socket.to(chatRoom).emit("notify-join-room", {
         id: user.id,
@@ -142,22 +151,6 @@ io.on("connection", (_socket) => {
     }
   });
 
-  socket.on("send-chat", (_msg, done) => {
-    const user = users.get(socket.data.userId);
-    const msg = _msg.trim();
-
-    if (!socket.data.chatRoom || !user || !msg) {
-      return;
-    }
-
-    io.to(socket.data.chatRoom).emit("receive-chat", {
-      id: user.id,
-      nickname: user.nickname,
-      msg,
-    });
-    done();
-  });
-
   socket.on("change-nickname", (_nickname, done) => {
     const user = users.get(socket.data.userId);
     const nickname = _nickname.trim();
@@ -178,6 +171,39 @@ io.on("connection", (_socket) => {
     }
 
     done();
+  });
+
+  socket.on("webrtc-offer", async (userId, offer) => {
+    const user = users.get(socket.data.userId);
+    const targetSocket = (await io.fetchSockets()).find(
+      (aSocket) => (aSocket.data.userId === userId),
+    );
+
+    if (user && targetSocket) {
+      socket.to(targetSocket.id).emit("webrtc-offer", socket.data.userId, offer);
+    }
+  });
+
+  socket.on("webrtc-answer", async (userId, answer) => {
+    const user = users.get(socket.data.userId);
+    const targetSocket = (await io.fetchSockets()).find(
+      (aSocket) => (aSocket.data.userId === userId),
+    );
+
+    if (user && targetSocket) {
+      socket.to(targetSocket.id).emit("webrtc-answer", socket.data.userId, answer);
+    }
+  });
+
+  socket.on("webrtc-ice-candidate", async (userId, iceCandidate) => {
+    const user = users.get(socket.data.userId);
+    const targetSocket = (await io.fetchSockets()).find(
+      (aSocket) => (aSocket.data.userId === userId),
+    );
+
+    if (user && targetSocket) {
+      socket.to(targetSocket.id).emit("webrtc-ice-candidate", socket.data.userId, iceCandidate);
+    }
   });
 });
 
