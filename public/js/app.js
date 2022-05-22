@@ -49,11 +49,7 @@ async function makeMediaStream() {
   }
 }
 
-async function makeRTCPeerConnection(otherUserId, isOffer) {
-  if (myRTCPeerConnection) {
-    myRTCPeerConnection.close();
-  }
-
+function makeRTCPeerConnection() {
   myRTCPeerConnection = new RTCPeerConnection({
     iceServers: [
       {
@@ -67,14 +63,19 @@ async function makeRTCPeerConnection(otherUserId, isOffer) {
     ],
   });
 
-  myRTCPeerConnection.onicecandidate = (event) => {
-    socket.emit("webrtc-ice-candidate", otherUserId, event.candidate);
-  };
+  if (myMediaStream) {
+    myMediaStream.getTracks()
+      .forEach((track) => myRTCPeerConnection.addTrack(track, myMediaStream));
+  }
 
   myRTCPeerConnection.ontrack = (event) => {
     [document.getElementById("peer_face").srcObject] = event.streams;
   };
 
+  myRTCPeerConnection.onicecandidate = undefined;
+}
+
+function createDataChannel(isOffer) {
   const onChatDataChannelMessage = (event) => {
     onReceiveChat(JSON.parse(event.data));
   };
@@ -87,13 +88,6 @@ async function makeRTCPeerConnection(otherUserId, isOffer) {
       myRTCPeerConnection.chatDataChannel = event.channel;
       myRTCPeerConnection.chatDataChannel.onmessage = onChatDataChannelMessage;
     };
-  }
-
-  await makeMediaStream();
-
-  if (myMediaStream) {
-    myMediaStream.getTracks()
-      .forEach((track) => myRTCPeerConnection.addTrack(track, myMediaStream));
   }
 }
 
@@ -146,10 +140,7 @@ async function joinRoomCallback(response) {
   document.getElementById("mic_on_off_button").classList.add("ri-mic-fill");
   document.getElementById("mic_on_off_button").classList.remove("ri-mic-off-fill");
 
-  document.getElementById("my_face").srcObject = null;
   document.getElementById("peer_face").srcObject = null;
-
-  await makeMediaStream();
 
   leaveButton.addEventListener("click", () => {
     if (myRTCPeerConnection) {
@@ -174,6 +165,12 @@ async function joinRoomCallback(response) {
   });
 }
 
+async function joinRoom(room) {
+  await makeMediaStream();
+  makeRTCPeerConnection();
+  socket.emit("join-room", room, joinRoomCallback);
+}
+
 function refreshRooms(_rooms) {
   const chatRoomListContainer = document.getElementById("chat_room_list_container");
   chatRoomListContainer.innerHTML = "";
@@ -183,8 +180,8 @@ function refreshRooms(_rooms) {
     roomDiv.classList.add("room-enter-badge");
     roomDiv.innerText = room;
 
-    roomDiv.addEventListener("click", () => {
-      socket.emit("join-room", roomDiv.innerText, joinRoomCallback);
+    roomDiv.addEventListener("click", async () => {
+      await joinRoom(roomDiv.innerText);
     });
 
     chatRoomListContainer.appendChild(roomDiv);
@@ -201,9 +198,9 @@ function initApplication() {
     ".chat-submit-text-input",
   );
 
-  chatRoomForm.addEventListener("submit", (event) => {
+  chatRoomForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    socket.emit("join-room", chatRoomTextInput.value, joinRoomCallback);
+    await joinRoom(chatRoomTextInput.value);
   });
 
   nicknameForm.addEventListener("submit", (event) => {
@@ -295,9 +292,13 @@ socket.on("notify-join-room", async (response) => {
     msg: "# Hi there!",
   });
 
-  await makeRTCPeerConnection(response.id, true);
-
+  createDataChannel(true);
   const offer = await myRTCPeerConnection.createOffer();
+
+  myRTCPeerConnection.onicecandidate = (event) => {
+    socket.emit("webrtc-ice-candidate", response.id, event.candidate);
+  };
+
   await myRTCPeerConnection.setLocalDescription(offer);
   socket.emit("webrtc-offer", response.id, offer);
 });
@@ -311,8 +312,9 @@ socket.on("notify-leave-room", (response) => {
   });
 
   if (myRTCPeerConnection) {
+    document.getElementById("peer_face").srcObject = null;
     myRTCPeerConnection.close();
-    myRTCPeerConnection = null;
+    makeRTCPeerConnection();
   }
 });
 
@@ -325,14 +327,19 @@ socket.on("notify-change-nickname", (response) => {
 });
 
 socket.on("webrtc-offer", async (userId, offer) => {
-  if (myRTCPeerConnection) {
+  if (!myRTCPeerConnection) {
     return;
   }
 
-  await makeRTCPeerConnection(userId, false);
+  createDataChannel(false);
 
   await myRTCPeerConnection.setRemoteDescription(offer);
   const answer = await myRTCPeerConnection.createAnswer();
+
+  myRTCPeerConnection.onicecandidate = (event) => {
+    socket.emit("webrtc-ice-candidate", userId, event.candidate);
+  };
+
   await myRTCPeerConnection.setLocalDescription(answer);
   socket.emit("webrtc-answer", userId, answer);
 });
