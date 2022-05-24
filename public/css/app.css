@@ -130,6 +130,12 @@ video {
   aspect-ratio: 4 / 3;
 }
 
+.mirror-player {
+  transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
+  -moz-transform: rotateY(180deg);
+}
+
 .chat-controller {
   display: flex;
   align-items: center;
