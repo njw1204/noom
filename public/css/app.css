@@ -64,6 +64,7 @@ video {
 .chat-list li {
   margin: 4px 0;
   padding: 4px 8px;
+  color: #000;
   background-color: #fafafa;
   border: 1px solid var(--color-bg-secondary);
   border-radius: var(--border-radius);
@@ -125,6 +126,7 @@ video {
 .face-player {
   width: calc((100vw - 50px) / 2);
   max-width: 400px;
+  max-height: 300px;
   aspect-ratio: 4 / 3;
 }
 

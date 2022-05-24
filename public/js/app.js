@@ -293,14 +293,14 @@ socket.on("notify-join-room", async (response) => {
   });
 
   createDataChannel(true);
-  const offer = await myRTCPeerConnection.createOffer();
 
   myRTCPeerConnection.onicecandidate = (event) => {
     socket.emit("webrtc-ice-candidate", response.id, event.candidate);
   };
 
-  await myRTCPeerConnection.setLocalDescription(offer);
+  const offer = await myRTCPeerConnection.createOffer();
   socket.emit("webrtc-offer", response.id, offer);
+  myRTCPeerConnection.setLocalDescription(offer);
 });
 
 socket.on("notify-leave-room", (response) => {
@@ -333,23 +333,22 @@ socket.on("webrtc-offer", async (userId, offer) => {
 
   createDataChannel(false);
 
-  await myRTCPeerConnection.setRemoteDescription(offer);
-  const answer = await myRTCPeerConnection.createAnswer();
-
   myRTCPeerConnection.onicecandidate = (event) => {
     socket.emit("webrtc-ice-candidate", userId, event.candidate);
   };
 
-  await myRTCPeerConnection.setLocalDescription(answer);
+  myRTCPeerConnection.setRemoteDescription(offer);
+  const answer = await myRTCPeerConnection.createAnswer();
   socket.emit("webrtc-answer", userId, answer);
+  myRTCPeerConnection.setLocalDescription(answer);
 });
 
-socket.on("webrtc-answer", async (userId, answer) => {
+socket.on("webrtc-answer", (userId, answer) => {
   if (!myRTCPeerConnection) {
     return;
   }
 
-  await myRTCPeerConnection.setRemoteDescription(answer);
+  myRTCPeerConnection.setRemoteDescription(answer);
 });
 
 socket.on("webrtc-ice-candidate", (userId, candidate) => {
