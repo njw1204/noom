@@ -101,14 +101,6 @@ io.on("connection", (_socket) => {
     if (user && chatRoom && !socket.data.chatRoom) {
       const isNewRoom = !getRooms().includes(chatRoom);
 
-      if (getSizeOfRoom(chatRoom) >= 2) {
-        done({
-          error: true,
-          message: "The room is Full!",
-        });
-        return;
-      }
-
       socket.join(chatRoom);
       socket.to(chatRoom).emit("notify-join-room", {
         id: user.id,
@@ -180,7 +172,7 @@ io.on("connection", (_socket) => {
     );
 
     if (user && targetSocket) {
-      socket.to(targetSocket.id).emit("webrtc-offer", socket.data.userId, offer);
+      socket.to(targetSocket.id).emit("webrtc-offer", socket.data.userId, user.nickname, offer);
     }
   });
 
@@ -191,7 +183,7 @@ io.on("connection", (_socket) => {
     );
 
     if (user && targetSocket) {
-      socket.to(targetSocket.id).emit("webrtc-answer", socket.data.userId, answer);
+      socket.to(targetSocket.id).emit("webrtc-answer", socket.data.userId, user.nickname, answer);
     }
   });
 
