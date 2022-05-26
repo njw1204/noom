@@ -42,6 +42,16 @@ async function makeMediaStream() {
       },
     });
 
+    myMediaStream.getVideoTracks().forEach((_track) => {
+      const track = _track;
+      track.enabled = document.getElementById("video_on_off_button").classList.contains("on");
+    });
+
+    myMediaStream.getAudioTracks().forEach((_track) => {
+      const track = _track;
+      track.enabled = document.getElementById("mic_on_off_button").classList.contains("on");
+    });
+
     document.getElementById("my_face").srcObject = myMediaStream;
   } catch (e) {
     myMediaStream = null;
@@ -152,14 +162,6 @@ async function joinRoomCallback(response) {
   document.querySelector("#chat_list_container .chat-list").innerHTML = "";
   document.querySelector("#nickname_form .nickname-text-input").value = nickname;
   document.querySelector("#chat_submit_form .chat-submit-text-input").value = "";
-
-  document.getElementById("video_on_off_button").classList.add("on");
-  document.getElementById("video_on_off_button").classList.add("ri-camera-fill");
-  document.getElementById("video_on_off_button").classList.remove("ri-camera-off-fill");
-
-  document.getElementById("mic_on_off_button").classList.add("on");
-  document.getElementById("mic_on_off_button").classList.add("ri-mic-fill");
-  document.getElementById("mic_on_off_button").classList.remove("ri-mic-off-fill");
 
   leaveButton.addEventListener("click", () => {
     rtcPeerConnectionMap.forEach((connection) => {
