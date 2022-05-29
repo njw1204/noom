@@ -30,10 +30,10 @@ html(lang="en")
           ul.chat-list
         section#chat_form_container.chat-form-container(style="display: none;")
           form#nickname_form.nickname-form
-            input.nickname-text-input(placeholder="Nickname")
+            input.nickname-text-input(placeholder="Nickname", maxlength="15")
             button.nickname-save-button Save
           form#chat_submit_form.chat-submit-form
-            input.chat-submit-text-input(placeholder="Chat")
+            input.chat-submit-text-input(placeholder="Chat", maxlength="5000")
             button.chat-submit-send-button Send
     script(src="/socket.io/socket.io.js")
     script(src="/js/app.js")
