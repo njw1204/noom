@@ -327,8 +327,8 @@ socket.on("notify-join-room", async (response) => {
   rtcPeerConnectionMap.set(response.id, myRTCPeerConnection);
 
   const offer = await myRTCPeerConnection.createOffer();
-  socket.emit("webrtc-offer", response.id, offer);
   myRTCPeerConnection.setLocalDescription(offer);
+  socket.emit("webrtc-offer", response.id, offer);
 });
 
 socket.on("notify-leave-room", (response) => {
@@ -375,8 +375,8 @@ socket.on("webrtc-offer", async (userId, userNickname, offer) => {
 
   myRTCPeerConnection.setRemoteDescription(offer);
   const answer = await myRTCPeerConnection.createAnswer();
-  socket.emit("webrtc-answer", userId, answer);
   myRTCPeerConnection.setLocalDescription(answer);
+  socket.emit("webrtc-answer", userId, answer);
 });
 
 socket.on("webrtc-answer", (userId, userNickname, answer) => {
